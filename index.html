@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Потрать состояние Сулеймана Керимова!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --column: #eef0f4;
+    --column-hover: #e6e9ef;
+    --border: #e2e5eb;
+    --text: #1a1d23;
+    --text-muted: #6b7280;
+    --accent: #c9a227;
+    --accent-dark: #a8861a;
+    --accent-light: #f5e6a8;
+    --green: #2f9e44;
+    --red: #e03131;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-hover: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .counter, .item-price, .receipt-total {
+    font-family: 'Manrope', sans-serif;
+  }
+
+  /* ====== ДИСКЛЕЙМЕР ====== */
+  .disclaimer-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 1;
+    transition: opacity 1.8s ease;
+  }
+
+  .disclaimer-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .disclaimer-box {
+    max-width: 540px;
+    text-align: center;
+    color: #e8e8e8;
+    padding: 40px 32px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: disclaimerIn 0.8s ease forwards 0.3s;
+  }
+
+  @keyframes disclaimerIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .disclaimer-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: rgba(201, 162, 39, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .disclaimer-icon svg {
+    width: 32px;
+    height: 32px;
+    stroke: #c9a227;
+    fill: none;
+  }
+
+  .disclaimer-box h3 {
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .disclaimer-box p {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #b0b0b0;
+    margin-bottom: 28px;
+  }
+
+  .disclaimer-box strong {
+    color: #c9a227;
+    font-weight: 600;
+  }
+
+  .disclaimer-btn {
+    background: #c9a227;
+    color: #000;
+    border: none;
+    padding: 14px 48px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    letter-spacing: 0.02em;
+  }
+
+  .disclaimer-btn:hover {
+    background: #f5e6a8;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(201, 162, 39, 0.4);
+  }
+
+  .disclaimer-btn:active { transform: translateY(0); }
+
+  /* ====== HEADER ====== */
+  header {
+    text-align: center;
+    padding: 40px 24px 32px;
+    background: var(--card);
+    border-radius: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ====== AVATAR — ПАРАЛЛАКС ====== */
+  .avatar-wrap {
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 30px;
+    position: relative;
+    perspective: 900px;
+    cursor: pointer;
+  }
+
+  .avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    padding: 4px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light), var(--accent));
+    box-shadow: 0 10px 30px rgba(201, 162, 39, 0.25);
+    transform-style: preserve-3d;
+    transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+    will-change: transform;
+    position: relative;
+  }
+
+  .avatar-wrap:hover .avatar-inner {
+    box-shadow: 0 20px 50px rgba(201, 162, 39, 0.45);
+  }
+
+  .avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 4px solid var(--card);
+    background: var(--column);
+  }
+
+  .avatar-inner::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(255,255,255,0.15),
+      transparent 50%
+    );
+    pointer-events: none;
+  }
+
+  .avatar-wrap .hint {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .avatar-wrap .hint svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    fill: none;
+  }
+
+  .avatar-wrap:hover .hint { opacity: 1; }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    max-width: 720px;
+    margin: 0 auto 20px;
+    line-height: 1.6;
+  }
+
+  .subtitle strong { color: var(--text); font-weight: 600; }
+
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .stat {
+    background: var(--column);
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .stat b {
+    display: block;
+    font-size: 1rem;
+    color: var(--text);
+    font-weight: 700;
+    margin-top: 2px;
+    font-family: 'Manrope', sans-serif;
+  }
+
+  .counter {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 16px 0 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .progress-bar {
+    width: 100%;
+    max-width: 500px;
+    height: 10px;
+    background: var(--column);
+    border-radius: 10px;
+    margin: 16px auto 8px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+  }
+
+  .percent {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  /* ====== CATEGORIES ====== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .category {
+    margin: 24px 0;
+    padding: 24px;
+    background: var(--card);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .category h2 {
+    color: var(--text);
+    margin-bottom: 18px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .category h2 svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--accent-dark);
+    fill: none;
+    flex-shrink: 0;
+  }
+
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+  }
+
+  /* ====== ITEM COLUMNS ====== */
+  .item {
+    background: var(--column);
+    border-radius: 14px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 130px;
+  }
+
+  .item:hover {
+    background: var(--column-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .item-name {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .item-price {
+    color: var(--accent-dark);
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .item-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+  }
+
+  .btn {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    flex: 1;
+  }
+
+  .btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .btn-minus {
+    background: var(--card);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition: all 0.15s;
+    flex: 0 0 auto;
+    min-width: 34px;
+  }
+
+  .btn-minus:hover {
+    background: var(--red);
+    color: #fff;
+    border-color: var(--red);
+  }
+
+  .qty {
+    font-weight: 700;
+    color: var(--text);
+    min-width: 24px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-family: 'Manrope', sans-serif;
+  }
+
+  /* ====== RECEIPT ====== */
+  .receipt-section {
+    max-width: 1100px;
+    margin: 24px auto 40px;
+    padding: 28px;
+    background: var(--card);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    border: 2px dashed var(--border);
+  }
+
+  .receipt-section h2 {
+    color: var(--text);
+    margin-bottom: 18px;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .receipt-section h2 svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--accent-dark);
+    fill: none;
+  }
+
+  .receipt-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    gap: 12px;
+    color: var(--text);
+  }
+
+  .receipt-item span:first-child { flex: 1; }
+  .receipt-item span:last-child {
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    color: var(--accent-dark);
+  }
+
+  .receipt-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 18px 0 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-top: 12px;
+    border-top: 2px solid var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .receipt-total span:last-child { color: var(--accent-dark); }
+
+  .empty-receipt {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 24px;
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+
+  .reset-btn {
+    display: block;
+    margin: 24px auto 0;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .reset-btn:hover { background: var(--red); }
+
+  /* ====== FOOTER ====== */
+  footer {
+    text-align: center;
+    padding: 32px 24px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .projects {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .project-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--card);
+    color: var(--text);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow);
+  }
+
+  .project-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(201, 162, 39, 0.3);
+  }
+
+  .project-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--accent-dark);
+    transition: stroke 0.2s ease;
+    flex-shrink: 0;
+    fill: none;
+  }
+
+  .project-btn:hover svg { stroke: #fff; }
+
+  .copyright {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-family: 'Manrope', sans-serif;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    h1 { font-size: 1.5rem; }
+    .counter { font-size: 1.6rem; }
+    .avatar-wrap { width: 120px; height: 120px; margin-bottom: 26px; }
+    .items-grid { grid-template-columns: 1fr 1fr; }
+    .item { min-height: 150px; padding: 12px; }
+    .category { padding: 18px; }
+    .receipt-section { padding: 20px; }
+    .project-btn { padding: 9px 16px; font-size: 0.8rem; }
+    .disclaimer-box { padding: 24px 20px; }
+    .disclaimer-box h3 { font-size: 1.25rem; }
+    .disclaimer-box p { font-size: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== ДИСКЛЕЙМЕР ====== -->
+<div class="disclaimer-overlay" id="disclaimer">
+  <div class="disclaimer-box">
+    <div class="disclaimer-icon">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12" y2="17"></line>
+      </svg>
+    </div>
+    <h3>Дисклеймер</h3>
+    <p>
+      Это <strong>развлекательный проект</strong>, созданный исключительно в шуточной форме.
+      Я <strong>не хочу оскорбить чью-либо национальность, религию, культуру или достоинство</strong>.
+      Все персонажи, суммы и товары — вымышленные и не являются финансовой рекомендацией.
+    </p>
+    <button class="disclaimer-btn" onclick="dismissDisclaimer()">
+      Понятно
+    </button>
+  </div>
+</div>
+
+<header>
+  <div class="avatar-wrap" id="avatarWrap" title="Осмотреть">
+    <div class="avatar-inner" id="avatarInner">
+      <img class="avatar"
+           src="https://cdnn21.img.ria.ru/images/155112/03/1551120353_0:235:2803:1812_1920x1080_80_0_0_efafc7fbf62f94fa9ced50a5adbac071.jpg"
+           alt="Сулейман Керимов"
+           onerror="this.src='https://ui-avatars.com/api/?name=SK&size=400&background=c9a227&color=fff&bold=true&font-size=0.4'">
+    </div>
+    <span class="hint">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      Осмотреть
+    </span>
+  </div>
+
+  <h1>Потрать состояние Сулеймана Керимова</h1>
+
+  <p class="subtitle">
+    Сулейман Керимов — сенатор Совета Федерации от Республики Дагестан,
+    один из богатейших людей России. Основной актив — крупная доля
+    в золотодобывающей компании <strong>«Полюс»</strong>.
+  </p>
+
+  <div class="stats">
+    <div class="stat">Состояние <b>$25,7 млрд</b></div>
+    <div class="stat">Место в РФ <b>5-е</b></div>
+    <div class="stat">Рост за год <b>$16,4 → $25,7 млрд</b></div>
+  </div>
+
+  <div class="counter">Осталось: <span id="remaining">$25,700,000,000</span></div>
+  <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  <div class="percent">Ты потратил <span id="percent">0.000000%</span> от всего состояния</div>
+</header>
+
+<main id="app"></main>
+
+<section class="receipt-section">
+  <h2>
+    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 2h16v20l-4-2-4 2-4-2-4 2z"></path>
+      <line x1="8" y1="7" x2="16" y2="7"></line>
+      <line x1="8" y1="11" x2="16" y2="11"></line>
+      <line x1="8" y1="15" x2="13" y2="15"></line>
+    </svg>
+    Твой чек
+  </h2>
+  <div id="receipt"><div class="empty-receipt">Ты ещё ничего не купил. Начни тратить!</div></div>
+  <button class="reset-btn" onclick="resetAll()">Сбросить всё</button>
+</section>
+
+<footer>
+  <div class="projects">
+    <a href="https://emkasemka7.github.io/lezgi-investor/" class="project-btn" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="20" x2="12" y2="10"></line>
+        <line x1="18" y1="20" x2="18" y2="4"></line>
+        <line x1="6" y1="20" x2="6" y2="16"></line>
+      </svg>
+      Lezgi Investor
+    </a>
+    <a href="https://emkasemka7.github.io/lezgi-victorina/" class="project-btn" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12" y2="17"></line>
+      </svg>
+      Lezgi Victorina
+    </a>
+    <a href="https://emkasemka7.github.io/inf-victorina/?clckid=80d123c6" class="project-btn" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12" y2="8"></line>
+      </svg>
+      Info Victorina
+    </a>
+  </div>
+
+  <div class="copyright">
+    EMIL COPYRIGHT 2026
+  </div>
+</footer>
+
+<script>
+// ====== ДИСКЛЕЙМЕР ======
+function dismissDisclaimer() {
+  const d = document.getElementById("disclaimer");
+  if (!d) return;
+  d.classList.add("hidden");
+  setTimeout(() => d.remove(), 1900);
+}
+
+// ====== БЮДЖЕТ ======
+const INITIAL_BUDGET = 25700000000; // $25.7 млрд по Forbes 2026
+let budget = INITIAL_BUDGET;
+let purchases = {};
+
+// ====== SVG-ИКОНКИ ======
+const icons = {
+  tech: '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12" y2="18"></line></svg>',
+  car: '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17v-5l2-5h10l2 5v5M5 17v2h2v-2M17 17v2h2v-2"></path><circle cx="7.5" cy="14.5" r="1.5"></circle><circle cx="16.5" cy="14.5" r="1.5"></circle></svg>',
+  home: '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+  chart: '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>',
+  mountain: '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-10 4 6 2-3 6 7z"></path></svg>',
+  diamond: '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"></path><path d="M2 9h20"></path><path d="M12 3l-4 6 4 12 4-12-4-6"></path></svg>',
+  sparkles: '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"></path></svg>',
+  building: '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"></rect><line x1="9" y1="6" x2="9" y2="6"></line><line x1="15" y1="6" x2="15" y2="6"></line><line x1="9" y1="10" x2="9" y2="10"></line><line x1="15" y1="10" x2="15" y2="10"></line><line x1="9" y1="14" x2="9" y2="14"></line><line x1="15" y1="14" x2="15" y2="14"></line></svg>',
+  heart: '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
+};
+
+// ====== КАТАЛОГ ТОВАРОВ ======
+const catalog = [
+  {
+    category: icons.tech + "Техника и гаджеты",
+    items: [
+      { id: "airpods", name: "AirPods Pro", price: 249 },
+      { id: "iphone", name: "iPhone 17 Pro Max — 2TB", price: 1999 },
+      { id: "samsung", name: "Samsung S26 Ultra — 1TB", price: 1499 },
+      { id: "macbook", name: "MacBook Pro 14\" M5 Max", price: 7699 },
+      { id: "macstudio", name: "Mac Studio M3 Ultra (512GB)", price: 14099 },
+      { id: "gamingpc", name: "Игровой ПК (RTX 5090)", price: 6950 },
+      { id: "razer", name: "Razer Blade 14 (2026)", price: 2799 },
+      { id: "ipad", name: "iPad Air M3 (256GB)", price: 749 },
+    ]
+  },
+  {
+    category: icons.car + "Транспорт",
+    items: [
+      { id: "camry", name: "Toyota Camry", price: 29000 },
+      { id: "tesla", name: "Tesla Model S Plaid", price: 132000 },
+      { id: "cybertruck", name: "Cybertruck (Tri Motor)", price: 70000 },
+      { id: "ferrari", name: "Ferrari F8 Tributo", price: 276000 },
+      { id: "lambo", name: "Lamborghini Aventador SVJ", price: 512000 },
+      { id: "bugatti", name: "Bugatti La Voiture Noire", price: 11000000 },
+      { id: "helicopter", name: "Вертолёт Bell 206", price: 850000 },
+      { id: "jet", name: "Jet Gulfstream G450", price: 22000000 },
+      { id: "boeing", name: "Boeing 737 Business Jet", price: 90000000 },
+    ]
+  },
+  {
+    category: icons.home + "Недвижимость",
+    items: [
+      { id: "flat_mkala", name: "Квартира в Махачкале (2 комн.)", price: 80000 },
+      { id: "house_derbent", name: "Дом в Дербенте", price: 250000 },
+      { id: "flat_msk", name: "Квартира в Москве (3 комн.)", price: 500000 },
+      { id: "villa_kaspii", name: "Вилла на Каспии", price: 2000000 },
+      { id: "paris_flat", name: "Парижская квартира (3 комн.)", price: 3800000 },
+      { id: "la_home", name: "Дом в Лос-Анджелесе (5 комн.)", price: 6500000 },
+      { id: "london_mansion", name: "Особняк в Лондоне (6 комн.)", price: 45000000 },
+      { id: "la_mansion", name: "Особняк в Лос-Анджелесе (8 комн.)", price: 65000000 },
+    ]
+  },
+  {
+    category: icons.chart + "Активы и инвестиции",
+    items: [
+      { id: "gold_1kg", name: "1 кг золота (слиток)", price: 85000 },
+      { id: "gold_100kg", name: "100 кг золота", price: 8500000 },
+      { id: "polyus_stock", name: "0.01% акций «Полюса»", price: 12000000 },
+      { id: "polyus_1pct", name: "1% акций «Полюса»", price: 1200000000 },
+      { id: "gazprom_stocks", name: "Акции Газпрома (пакет)", price: 10000000 },
+      { id: "sber_stocks", name: "Акции Сбербанка (пакет)", price: 5000000 },
+      { id: "gold_mine", name: "Небольшой золотой рудник", price: 500000000 },
+      { id: "oil_field", name: "Нефтяное месторождение", price: 1500000000 },
+    ]
+  },
+  {
+    category: icons.mountain + "Лезгинский бизнес",
+    items: [
+      { id: "restaurant", name: "Ресторан лезгинской кухни", price: 150000 },
+      { id: "it_school", name: "IT-школа в Дербенте", price: 300000 },
+      { id: "horse_farm", name: "Конный завод (лезгинские породы)", price: 500000 },
+      { id: "carpet_shop", name: "Сеть магазинов лезгинских ковров", price: 1500000 },
+      { id: "tourism_startup", name: "Стартап по туризму в Дагестане", price: 800000 },
+      { id: "winery", name: "Винодельня в Дагестане", price: 2000000 },
+      { id: "mountain_hotel", name: "Отель в горах Дагестана", price: 5000000 },
+      { id: "lezgi_fund", name: "Благотворительный фонд для Лезгин", price: 3000000 },
+    ]
+  },
+  {
+    category: icons.diamond + "Роскошь и культура",
+    items: [
+      { id: "rolex", name: "Rolex Oyster 36mm", price: 14000 },
+      { id: "rolex_gold", name: "Rolex Day Date 40mm Gold", price: 65000 },
+      { id: "ring", name: "Бриллиантовое кольцо Tiffany", price: 20000 },
+      { id: "kinzhal", name: "Лезгинский кинжал ручной работы", price: 5000 },
+      { id: "carpet", name: "Лезгинский ковёр ручной работы", price: 10000 },
+      { id: "whisky", name: "Whisky Macallan Michael Dillon 1926", price: 1530000 },
+      { id: "picasso", name: "Картина Пикассо «Les Femmes d'Alger»", price: 179400000 },
+      { id: "monalisa", name: "Мона Лиза (оценка)", price: 869000000 },
+    ]
+  },
+  {
+    category: icons.sparkles + "Развлечения",
+    items: [
+      { id: "spotify", name: "Spotify на 80 лет", price: 13600 },
+      { id: "netflix", name: "Netflix на 80 лет", price: 19500 },
+      { id: "concert", name: "Частный концерт любой звезды", price: 1400000 },
+      { id: "festival", name: "Лезгинский фестиваль", price: 500000 },
+      { id: "movie", name: "Снять фильм о Лезгинах", price: 2000000 },
+      { id: "worldcup", name: "Все билеты на финал ЧМ-2026", price: 80000000 },
+    ]
+  },
+  {
+    category: icons.building + "Крупные проекты",
+    items: [
+      { id: "mosque", name: "Построить мечеть в Дербенте", price: 1000000 },
+      { id: "school", name: "Школа в лезгинском селе", price: 500000 },
+      { id: "road", name: "Дорога в горах Дагестана", price: 10000000 },
+      { id: "stadium", name: "Стадион в Махачкале", price: 150000000 },
+      { id: "satellite", name: "Запустить свой спутник", price: 80000000 },
+      { id: "nfl", name: "NFL команда (средняя)", price: 3000000000 },
+      { id: "nba", name: "NBA команда (средняя)", price: 2400000000 },
+      { id: "f1", name: "Команда F1 (средняя)", price: 700000000 },
+      { id: "mars", name: "Стартовый пакет колонии на Марсе", price: 200000000000 },
+    ]
+  },
+  {
+    category: icons.heart + "Благотворительность",
+    items: [
+      { id: "give5000", name: "Раздать $10,000 5000 людям", price: 50000000 },
+      { id: "help_lezgi", name: "Помощь лезгинским семьям", price: 5000000 },
+      { id: "scholarship", name: "Стипендии лезгинским студентам", price: 1000000 },
+      { id: "hospital", name: "Больница в Дербенте", price: 20000000 },
+      { id: "water", name: "Водоснабжение в горных сёлах", price: 8000000 },
+    ]
+  },
+];
+
+// ====== РЕНДЕР КАТАЛОГА ======
+function renderCatalog() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+
+  catalog.forEach(cat => {
+    const section = document.createElement("section");
+    section.className = "category";
+    section.innerHTML = `<h2>${cat.category}</h2>`;
+
+    const grid = document.createElement("div");
+    grid.className = "items-grid";
+
+    cat.items.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "item";
+      const qty = purchases[item.id] || 0;
+      div.innerHTML = `
+        <div class="item-name">${item.name}</div>
+        <div class="item-price">$${item.price.toLocaleString('en-US')}</div>
+        <div class="item-controls">
+          <button class="btn" onclick="buy('${item.id}')">Купить</button>
+          <span class="qty" id="qty-${item.id}">${qty}</span>
+          <button class="btn-minus" onclick="sell('${item.id}')">−</button>
+        </div>
+      `;
+      grid.appendChild(div);
+    });
+
+    section.appendChild(grid);
+    app.appendChild(section);
+  });
+}
+
+// ====== ПОИСК ТОВАРА ======
+function findItem(id) {
+  for (const cat of catalog) {
+    for (const item of cat.items) {
+      if (item.id === id) return item;
+    }
+  }
+  return null;
+}
+
+// ====== ПОКУПКА ======
+function buy(id) {
+  const item = findItem(id);
+  if (!item) return;
+  if (budget < item.price) {
+    alert("Недостаточно средств!\nНе хватает: $" + (item.price - budget).toLocaleString('en-US'));
+    return;
+  }
+  budget -= item.price;
+  purchases[id] = (purchases[id] || 0) + 1;
+  updateUI();
+}
+
+// ====== ПРОДАЖА ======
+function sell(id) {
+  const item = findItem(id);
+  if (!item) return;
+  if (!purchases[id] || purchases[id] <= 0) return;
+  purchases[id]--;
+  budget += item.price;
+  if (purchases[id] === 0) delete purchases[id];
+  updateUI();
+}
+
+// ====== ОБНОВЛЕНИЕ UI ======
+function updateUI() {
+  document.getElementById("remaining").textContent = "$" + budget.toLocaleString('en-US');
+
+  const spent = INITIAL_BUDGET - budget;
+  const percent = (spent / INITIAL_BUDGET) * 100;
+  document.getElementById("progress").style.width = percent + "%";
+  document.getElementById("percent").textContent = percent.toFixed(6) + "%";
+
+  catalog.forEach(cat => {
+    cat.items.forEach(item => {
+      const el = document.getElementById("qty-" + item.id);
+      if (el) el.textContent = purchases[item.id] || 0;
+    });
+  });
+
+  renderReceipt();
+}
+
+// ====== ЧЕК ======
+function renderReceipt() {
+  const receipt = document.getElementById("receipt");
+  const keys = Object.keys(purchases);
+
+  if (keys.length === 0) {
+    receipt.innerHTML = '<div class="empty-receipt">Ты ещё ничего не купил. Начни тратить!</div>';
+    return;
+  }
+
+  let html = "";
+  let total = 0;
+
+  keys.forEach(id => {
+    const item = findItem(id);
+    const qty = purchases[id];
+    const sum = item.price * qty;
+    total += sum;
+    html += `<div class="receipt-item">
+      <span>${item.name} × ${qty}</span>
+      <span>$${sum.toLocaleString('en-US')}</span>
+    </div>`;
+  });
+
+  html += `<div class="receipt-total">
+    <span>ИТОГО:</span>
+    <span>$${total.toLocaleString('en-US')}</span>
+  </div>`;
+
+  receipt.innerHTML = html;
+}
+
+// ====== СБРОС ======
+function resetAll() {
+  if (!confirm("Точно сбросить все покупки?")) return;
+  budget = INITIAL_BUDGET;
+  purchases = {};
+  updateUI();
+}
+
+// ====== ПАРАЛЛАКС ДЛЯ АВАТАРА ======
+const avatarWrap = document.getElementById("avatarWrap");
+const avatarInner = document.getElementById("avatarInner");
+
+if (avatarWrap && avatarInner) {
+  avatarWrap.addEventListener("mousemove", (e) => {
+    const rect = avatarWrap.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateX = ((y - centerY) / centerY) * -15;
+    const rotateY = ((x - centerX) / centerX) * 15;
+    const scale = 1.08;
+
+    avatarInner.style.transform =
+      `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
+  });
+
+  avatarWrap.addEventListener("mouseleave", () => {
+    avatarInner.style.transform = "rotateX(0) rotateY(0) scale(1)";
+  });
+}
+
+// ====== ИНИЦИАЛИЗАЦИЯ ======
+renderCatalog();
+updateUI();
+</script>
+
+</body>
+</html>
